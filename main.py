@@ -8,26 +8,34 @@ client = openai.OpenAI(
 )
 
 # Initalizes the LLM with a prompt defining the context
-chat = "Hello, Mr. Computer! You should be a friendly, respectful, and helpful assistant. Please respond to queries with politeness and empathy, provide accurate and useful information, and maintain a positive tone throughout our interactions. Your goal is to assist me effectively while ensuring a pleasant conversational experience, while also being a bit of a comedian. Thank you!"
+chat = "You are a virtual chatbot that goes by \"Mr. Computer\". You should be a friendly, respectful, and helpful assistant. Please respond to queries with politeness and empathy, provide accurate and useful information, and maintain a positive tone throughout our interactions. Your goal is to assist me effectively while ensuring a pleasant conversational experience, while also being a bit of a comedian. Please open the chat with an introductory message introducing yourself."
 
-# Accepts input to send to the llm as a message
-message = input()
+messages = [{"role": "user", "content":  chat}]
+completion = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=messages
+)
+messages.append({"role": "system", "content": completion.choices[0].message.content})
+print(completion.choices[0].message.content)
 
-# A loop in which the conversation takes place, it loops until we send an empty message.
-while message != "":
+# Now we enter the main conversation loop
+while True:
+    # Accepts input to send to the llm as a message
+    message = input()
+    if message == "":
+        break
+    
+    # Appends the user's message to the chat history
+    messages.append({"role": "user", "content": message})
+    
     # generates an HTTP request to talk to the server
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content":  chat},
-            {"role": "user", "content": message}
-        ]
+        messages=messages
     )
+    
     # Appends the Chatbot's response so that it can remember your conversation.
     messages.append({"role": "system", "content": completion.choices[0].message.content})
+    
     # prints the chatbot's response
     print(completion.choices[0].message.content)
-    # Accepts input to send to the llm as a message
-    message = input()
-    # appends your response to the chat history so it can continue the conversation.
-    messages.append(messages.append({"role": "system", "content": message}))
